@@ -2,16 +2,15 @@ package com.techguru.noservlet.util;
 
 import com.techguru.noservlet.http.HttpOmletRequest;
 import com.techguru.noservlet.http.HttpOmletResponse;
-import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
+
 import java.util.HashMap;
 import java.util.Map;
 
 public final class HttpUtils {
 
-  private static final String htmlBody = "<html><body>${message}</body></html>";
+  private HttpUtils(){}
+
+  private static final String HTML_BODY = "<html><body>${message}</body></html>";
 
   public static HttpOmletRequest parse(String request){
 
@@ -29,7 +28,7 @@ public final class HttpUtils {
   }
 
   public static HttpOmletResponse compose(String response){
-    String body = htmlBody.replace("${message}",response);
+    String body = HTML_BODY.replace("${message}",response);
     String rawResponse = "HTTP/1.1 200 OK\r\n"
         + "Content-Length: "+body.length()+"\r\n"
         + "Content-Type: text/html\r\n\r\n"
@@ -39,7 +38,7 @@ public final class HttpUtils {
 
   private static String getPath(String url){
     int index = url.indexOf("?");
-    return index > 0 ? url.substring(0,index):url.substring(0);
+    return index > 0 ? url.substring(0,index):url;
   }
 
   private static Map<String,String> getParams(String url){

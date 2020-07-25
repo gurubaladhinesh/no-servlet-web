@@ -4,6 +4,8 @@ import com.techguru.noservlet.http.omlet.impl.HelloWorldOmlet;
 
 public class OmletFactory {
 
+  private OmletFactory(){}
+
   public static Omlet getOmlet(String path){
     Omlet omlet;
     switch (path){

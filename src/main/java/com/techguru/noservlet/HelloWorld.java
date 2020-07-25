@@ -18,46 +18,49 @@ import java.nio.charset.StandardCharsets;
 
 public class HelloWorld {
 
-  private static final Logger logger = LoggerFactory.getLogger(HelloWorld.class);
+    private static final Logger logger = LoggerFactory.getLogger(HelloWorld.class);
 
-  private static final int PORT = 8080;
+    private static final int PORT = 8080;
 
-  public static void main(String[] args)
-      throws IOException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+    public static void main(String[] args)
+            throws IOException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+        ServerSocket serverSocket = null;
+        try {
+            serverSocket = new ServerSocket(PORT);
+            while (true) {
+                logger.info("Server running and listening for client request");
+                Socket clientSocket = serverSocket.accept();
 
-    ServerSocket serverSocket = new ServerSocket(PORT);
-    while (true) {
-      logger.info("Server running and listening for client request");
-      Socket clientSocket = serverSocket.accept();
+                BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+                OutputStream out = clientSocket.getOutputStream();
+                String line;
+                StringBuilder requestBuilder = new StringBuilder();
+                while ((line = in.readLine()) != null && !line.equals("")) {
+                    requestBuilder.append(line);
+                }
+                String rawRequest = requestBuilder.toString();
+                logger.info("Raw HTTP request::\n{}", rawRequest);
+                HttpOmletRequest httpRequest = HttpUtils.parse(rawRequest);
 
-      BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-      OutputStream out = clientSocket.getOutputStream();
-      String line;
-      StringBuilder requestBuilder = new StringBuilder();
-      while ((line = in.readLine()) != null && !line.equals("")) {
-        requestBuilder.append(line);
-      }
-      String rawRequest = requestBuilder.toString();
-      logger.info("Raw HTTP request::\n{}",rawRequest);
-      HttpOmletRequest httpRequest = HttpUtils.parse(rawRequest);
+                if ("/exit".equalsIgnoreCase(httpRequest.getPath())) {
+                    logger.info("Shutting down...");
+                    break;
+                }
 
-      if ("/exit".equalsIgnoreCase(httpRequest.getPath())) {
-        logger.info("Shutting down...");
-        break;
-      }
+                String response = HttpRequestHandler.handle(httpRequest);
+                HttpOmletResponse httpResponse = HttpUtils.compose(response);
+                logger.info("Raw HTTP response::\n{}", httpResponse.getRawResponse());
 
-      String response = HttpRequestHandler.handle(httpRequest);
-      HttpOmletResponse httpResponse = HttpUtils.compose(response);
-      logger.info("Raw HTTP response::\n{}",httpResponse.getRawResponse());
+                out.write(httpResponse.getRawResponse().getBytes(StandardCharsets.UTF_8));
 
-      out.write(httpResponse.getRawResponse().getBytes(StandardCharsets.UTF_8));
-
-      out.flush();
-      in.close();
-      out.close();
-      clientSocket.close();
+                out.flush();
+                in.close();
+                out.close();
+                clientSocket.close();
+            }
+        } finally {
+            logger.info("Server shutdown completed");
+            if (serverSocket != null) serverSocket.close();
+        }
     }
-    logger.info("Server shutdown completed");
-    serverSocket.close();
-  }
 }

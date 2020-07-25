@@ -12,10 +12,6 @@ public class HttpOmletRequest {
 
   private Map<String, String> headers;
 
-  public HttpOmletRequest(){
-
-  }
-
   public String getPath() {
     return path;
   }

@@ -6,6 +6,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 public final class HttpRequestHandler {
+  
+  private HttpRequestHandler(){}
 
   public static String handle(HttpOmletRequest httpRequest)
       throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
